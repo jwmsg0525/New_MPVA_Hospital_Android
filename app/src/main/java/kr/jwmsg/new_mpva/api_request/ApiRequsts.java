@@ -15,7 +15,9 @@ public interface ApiRequsts {
     @GET("/api/search/addr/{addr1}")
     Call<JsonElement> searchByCity(@Path("addr1") String addr1);
 
-
     @GET("/api/search/addr/{addr1}/{addr2}")
     Call<JsonElement> searchByCity(@Path("addr1") String addr1,@Path("addr2") String addr2);
+
+    @GET("/api/get/addr")
+    Call<JsonElement> getAddrList();
 }

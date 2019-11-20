@@ -34,7 +34,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/location_spinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -43,17 +43,26 @@
         android:spinnerMode="dialog"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_defaultLocation" />
+        app:layout_constraintTop_toBottomOf="@+id/text_defaultLocation"
+        android:background="@drawable/border"
+        />
 
-    <Button
-        android:id="@+id/button"
+    <Switch
+        android:id="@+id/GPS_Switch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:text="현재위치로 설정"
+        android:fontFamily="sans-serif"
+        android:text="위치 기반 검색"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textOff="꺼짐"
+        android:textOn="켜짐"
+        android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+        app:layout_constraintTop_toBottomOf="@+id/location_spinner" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

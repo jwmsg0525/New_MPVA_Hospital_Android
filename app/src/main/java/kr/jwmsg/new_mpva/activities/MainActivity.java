@@ -3,7 +3,10 @@ package kr.jwmsg.new_mpva.activities;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -25,6 +28,10 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 import kr.jwmsg.new_mpva.R;
 import kr.jwmsg.new_mpva.api_request.ApiRequsts;
@@ -48,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar( toolbar );
 
 
-        search_location( "울산광역시" );
+        search_location( getaddr().province );
         changeEditorListener();
         clickListListener();
 
@@ -78,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected( item );
     }
+
 
 
 
@@ -132,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (rtn.getAsJsonObject().getAsJsonPrimitive( "status" ).getAsString().equals( "error" )) {
                     Toast.makeText( getApplicationContext(), "Server Error\n" + rtn.getAsJsonObject(), Toast.LENGTH_LONG ).show();
                 }else{
-                    search_location( "울산광역시" );
+                    search_location( getaddr().province );
                 }
 
             }
@@ -145,20 +153,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
+
+    public String getSettingLocation(){
+        SharedPreferences sp_settings = getSharedPreferences("settings", MODE_PRIVATE);
+        return sp_settings.getString( "locations","서울특별시" );
+    }
+
     public LocationData getaddr() {
         LocationData locationData = new LocationData();
+        locationData.province = getSettingLocation();
+        locationData.addr = getSettingLocation();
 
-        LocationManager lm = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+        SharedPreferences sp_settings = getSharedPreferences("settings", MODE_PRIVATE);
+        if( !sp_settings.getBoolean( "GPS_Switch",true )){
+            return locationData;
+        }
 
 
         if (checkSelfPermission( Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED &&
                 checkSelfPermission( Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION }, 1001);
-
-            return null;
+            return locationData;
         }
 
+
+        LocationManager lm = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
         Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         if (location!=null) {
@@ -166,23 +188,41 @@ public class MainActivity extends AppCompatActivity {
             double latitude = location.getLatitude();
             locationData.longitude = longitude;
             locationData.latitude = latitude;
-            Log.i( "longitude", longitude + "" );
-            Log.i( "latitude", latitude + "" );
+            locationData.initial = true;
         }else{
             location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if(location == null){
-                return null;
-            }
             double longitude = location.getLongitude();
             double latitude = location.getLatitude();
             locationData.longitude = longitude;
             locationData.latitude = latitude;
-            Log.i( "longitude", longitude + "" );
-            Log.i( "latitude", latitude + "" );
+            locationData.initial = true;
+        }
+
+
+
+
+        if(locationData.initial){
+            Geocoder gCoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+            List<Address> addr = null;
+            try{
+
+                addr = gCoder.getFromLocation(locationData.latitude,locationData.longitude,1);
+
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+            if (addr != null && addr.size()!=0) {
+                locationData.addr = addr.get(0).getAddressLine(0 );
+                locationData.province = locationData.addr.split( " " )[0];
+            }
         }
 
         return locationData;
     }
+
+
+
 
 
     public void changeEditorListener() {
