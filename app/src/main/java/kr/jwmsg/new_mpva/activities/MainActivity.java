@@ -20,7 +20,6 @@ import androidx.core.app.ActivityCompat;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -36,6 +35,7 @@ import java.util.Locale;
 import kr.jwmsg.new_mpva.R;
 import kr.jwmsg.new_mpva.api_request.ApiRequsts;
 import kr.jwmsg.new_mpva.data_controller.HospitalListAdt;
+import kr.jwmsg.new_mpva.data_structure.HospitalData;
 import kr.jwmsg.new_mpva.data_structure.LocationData;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -87,8 +87,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
-
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        search_location( getaddr().province );
+        changeEditorListener();
+        clickListListener();
+    }
 
     public void search_location(String addr){
         Retrofit retrofit = new Retrofit.Builder()
@@ -230,7 +240,6 @@ public class MainActivity extends AppCompatActivity {
         editText.addTextChangedListener( new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
@@ -251,11 +260,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 JsonElement job = (JsonObject)adapterView.getItemAtPosition( i );
-                Log.i("phone",job.getAsJsonObject().getAsJsonPrimitive( "Tel" ).getAsString());
+                HospitalData hospitalData = new HospitalData( job );
+                Intent intent = new Intent( getApplicationContext(), HospitalActivity.class );
+                Bundle bundle = new Bundle(  );
+                bundle.putSerializable( "hospital", hospitalData );
+                intent.putExtra( "bundle",bundle );
+                startActivity( intent );
 
             }
         } );
     }
+
+
 }
 
 
