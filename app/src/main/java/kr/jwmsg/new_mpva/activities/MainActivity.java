@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -193,26 +194,24 @@ public class MainActivity extends AppCompatActivity {
         LocationManager lm = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
         Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
-        if (location!=null) {
-            double longitude = location.getLongitude();
-            double latitude = location.getLatitude();
-            locationData.longitude = longitude;
-            locationData.latitude = latitude;
-            locationData.initial = true;
-        }else{
+        if (location==null) {
             location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            double longitude = location.getLongitude();
-            double latitude = location.getLatitude();
-            locationData.longitude = longitude;
-            locationData.latitude = latitude;
-            locationData.initial = true;
         }
 
+        if (location==null) {
+            locationData.initial = false;
+            return locationData;
+        }
 
+        double longitude = location.getLongitude();
+        double latitude = location.getLatitude();
+        locationData.longitude = longitude;
+        locationData.latitude = latitude;
+        locationData.initial = true;
 
 
         if(locationData.initial){
-            Geocoder gCoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+            Geocoder gCoder = new Geocoder(getApplicationContext(), Locale.KOREA);
             List<Address> addr = null;
             try{
 
@@ -224,7 +223,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (addr != null && addr.size()!=0) {
                 locationData.addr = addr.get(0).getAddressLine(0 );
-                locationData.province = locationData.addr.split( " " )[0];
+                Log.i("addr",locationData.addr);
+                locationData.province = locationData.addr.split( " " )[1];
             }
         }
 
